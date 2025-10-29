@@ -103,7 +103,7 @@
     mindar-image="imageTargetSrc: targets (1).mind; autoStart: true; filterMinCF: 0.001; filterBeta: 0.05;"
     embedded
     color-space="sRGB"
-    renderer="alpha: true; antialias: true; colorManagement: true; physicallyCorrectLights: true;"
+    renderer="alpha: true; antialias: true; physicallyCorrectLights: true;"
     vr-mode-ui="enabled: false"
   >
     <a-assets>
@@ -112,22 +112,23 @@
 
     <a-camera position="0 0 0" look-controls="false"></a-camera>
 
-    <a-plane id="videoPlane"
-         position="0 0.4 0"
-         rotation="0 0 0"
-         visible="false"
-         scale="1 0.6 1"
-         material="shader: flat; src: #juiceVideo;">
-</a-plane>
-
-
+    <!-- ✅ Fixed Video exactly on card -->
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-plane id="videoPlane"
+        material="shader: flat; src: #juiceVideo;"
+        position="0 0 0.02"  <!-- Slightly above card surface -->
+        rotation="0 0 0"
+        width="1"
+        height="0.6"
+        visible="false">
+      </a-plane>
     </a-entity>
   </a-scene>
 
   <script>
     const scene = document.querySelector('a-scene');
     const video = document.querySelector('#juiceVideo');
-    const plane = document.getElementById('videoPlane');
+    const plane = document.querySelector('#videoPlane');
     const heartsContainer = document.getElementById('hearts');
     const share = document.getElementById('share');
     let heartInterval = null;
@@ -168,9 +169,7 @@
       }
 
       if(!showShareTimeout){
-        showShareTimeout = setTimeout(()=>{
-          share.style.display = 'block';
-        }, 10000);
+        showShareTimeout = setTimeout(()=>{ share.style.display = 'block'; }, 10000);
       }
     });
 
@@ -178,23 +177,14 @@
       console.log("Target lost");
       plane.setAttribute('visible', false);
       video.pause();
-      if(heartInterval){
-        clearInterval(heartInterval);
-        heartInterval = null;
-      }
-      if(showShareTimeout){
-        clearTimeout(showShareTimeout);
-        showShareTimeout = null;
-      }
+      if(heartInterval){ clearInterval(heartInterval); heartInterval = null; }
+      if(showShareTimeout){ clearTimeout(showShareTimeout); showShareTimeout = null; }
       share.style.display = 'none';
     });
 
     video.addEventListener('ended', () => {
       share.style.display = 'block';
-      if(heartInterval){
-        clearInterval(heartInterval);
-        heartInterval = null;
-      }
+      if(heartInterval){ clearInterval(heartInterval); heartInterval = null; }
     });
 
     // ✅ Replace with your real links

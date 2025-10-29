@@ -1,192 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AR Thank You — Locked Video (stable)</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>AR Thank You Card (Fixed & Scanning UI)</title>
 
-  <!-- A-Frame + MindAR -->
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <!-- A-Frame + MindAR -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
 
-  <style>
-    html, body { margin:0; height:100%; overflow:hidden; background:transparent; }
-    .hearts-container { position: fixed; inset: 0; pointer-events:none; z-index:9998; overflow:hidden; }
-    .heart { position:absolute; bottom:-30px; font-size:20px; opacity:0.9; filter: drop-shadow(0 0 6px rgba(255,0,100,0.8)); animation: floatUp linear forwards; }
-    @keyframes floatUp {
-      0% { transform: translateY(0) scale(1); opacity: 0.3; }
-      50% { transform: translateY(-60vh) scale(1.3); opacity: 0.8; }
-      100% { transform: translateY(-120vh) scale(1.1); opacity: 0; }
-    }
+    <style>
+      body, html { margin: 0; overflow: hidden; }
+      #ar-container { width: 100vw; height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <div id="ar-container">
+      <a-scene
+        mindar-image="imageTargetSrc: ./targets (1).mind; uiScanning: true;"
+        color-space="sRGB"
+        renderer="colorManagement: true, physicallyCorrectLights"
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: true"
+      >
+        <a-assets>
+          <video
+            id="thankyouVideo"
+            src="./thank_you.mp4"
+            preload="auto"
+            loop="true"
+            crossorigin="anonymous"
+            webkit-playsinline
+            playsinline
+          ></video>
+        </a-assets>
 
-    #share { display:none; position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:9999; color:#fff; font-family:system-ui, sans-serif; background: rgba(0,0,0,0.45); padding:12px 16px; border-radius:12px; backdrop-filter: blur(6px); }
-    #share a { color:#fff; text-decoration:none; margin:0 8px; padding:8px 10px; border-radius:8px; }
-    #shareFb { background:#1877f2 } #shareWa { background:#25d366 } #reviewLink { background:#ff9500 }
-  </style>
-</head>
-<body>
+        <a-entity mindar-image-target="targetIndex: 0">
+          <a-video
+            src="#thankyouVideo"
+            width="1"
+            height="0.6"
+            position="0 0 0"
+            rotation="0 0 0"
+            autoplay="false"
+          ></a-video>
+        </a-entity>
 
-  <!-- floating hearts (HTML overlay) -->
-  <div class="hearts-container" id="hearts"></div>
+        <a-camera position="0 0 0" look-controls="false"></a-camera>
+      </a-scene>
+    </div>
 
-  <!-- share panel -->
-  <div id="share">
-    <span>💬 Share / Review:</span>
-    <a id="shareFb" target="_blank">Facebook</a>
-    <a id="shareWa" target="_blank">WhatsApp</a>
-    <a id="reviewLink" target="_blank">Leave a review</a>
-  </div>
+    <script>
+      const scene = document.querySelector("a-scene");
+      const video = document.querySelector("#thankyouVideo");
 
-  <!-- MindAR scene -->
-  <a-scene
-    mindar-image="imageTargetSrc: targets (1).mind; autoStart: true; filterMinCF: 0.2; filterBeta: 0.2;"
-    embedded
-    color-space="sRGB"
-    renderer="alpha: true; antialias: true;"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: true"
-  >
-    <a-assets>
-      <!-- your video file (name must match) -->
-      <video id="juiceVideo" src="thank_you.mp4" preload="auto" playsinline webkit-playsinline crossorigin="anonymous"></video>
-    </a-assets>
+      scene.addEventListener("arReady", () => {
+        console.log("AR Ready!");
+      });
 
-    <a-camera position="0 0 0" look-controls="false"></a-camera>
+      scene.addEventListener("targetFound", () => {
+        console.log("Target Found!");
+        video.play();
+      });
 
-    <!-- MindAR target entity (kept, but we won't rely on it for continuous updates) -->
-    <a-entity id="mindarAnchor" mindar-image-target="targetIndex: 0"></a-entity>
-
-    <!-- NOTE: we will create a "fixedEntity" dynamically on targetFound and attach a-plane inside it -->
-  </a-scene>
-
-  <script>
-    // Helper to spawn hearts overlay
-    function spawnHeartOnce() {
-      const hearts = document.getElementById('hearts');
-      const h = document.createElement('div');
-      h.className = 'heart';
-      h.innerText = '❤️';
-      h.style.left = (10 + Math.random()*80) + 'vw';
-      h.style.fontSize = (18 + Math.random()*26) + 'px';
-      h.style.animationDuration = (4 + Math.random()*4) + 's';
-      hearts.appendChild(h);
-      setTimeout(()=> h.remove(), 9000);
-    }
-
-    // Variables we'll use
-    const sceneEl = document.querySelector('a-scene');
-    const anchorEl = document.getElementById('mindarAnchor');
-    const video = document.getElementById('juiceVideo');
-    const share = document.getElementById('share');
-    let fixedEntity = null;
-    let heartInterval = null;
-    let showShareTimeout = null;
-
-    // Utility: create an a-plane element with the video texture and attach to parent element
-    function createFixedPlane(parentEl, width = 1.2) {
-      const plane = document.createElement('a-plane');
-      plane.setAttribute('width', width);
-      // height will be computed after video metadata loaded
-      plane.setAttribute('height', 0.68);
-      plane.setAttribute('material', 'shader: flat; src: #juiceVideo; side: double;');
-      plane.setAttribute('position', '0 0 0'); // plane local to fixed entity
-      plane.setAttribute('rotation', '0 0 0');
-      plane.setAttribute('visible', 'false');
-      parentEl.appendChild(plane);
-      // when video metadata known we will adjust height dynamically
-      video.addEventListener('loadedmetadata', () => {
-        const aspect = video.videoWidth / video.videoHeight;
-        plane.setAttribute('width', width);
-        plane.setAttribute('height', width / aspect);
-      }, { once: true });
-      return plane;
-    }
-
-    // On targetFound: create fixedEntity locked at the anchor's CURRENT world matrix
-    sceneEl.addEventListener('targetFound', async () => {
-      console.log('targetFound — creating locked entity');
-
-      // ensure video element exists
-      try {
-        // play muted first to satisfy autoplay policies; we'll unmute shortly if needed.
-        await video.play().catch(()=>{ /* ignore */ });
-      } catch(e){ console.warn('video play try failed', e); }
-
-      // Get anchor's world matrix
-      const anchorObj = anchorEl.object3D;
-      const matrixWorld = anchorObj.matrixWorld.clone();
-
-      // Create fixed entity only if not present
-      if (fixedEntity) {
-        // remove previous if any
-        fixedEntity.parentNode && fixedEntity.parentNode.removeChild(fixedEntity);
-        fixedEntity = null;
-      }
-
-      // Create an a-entity which we will place at anchor's world matrix
-      fixedEntity = document.createElement('a-entity');
-
-      // Append to scene (so it uses scene.object3D coordinate space)
-      sceneEl.appendChild(fixedEntity);
-
-      // Copy matrixWorld into the new entity and freeze updates
-      fixedEntity.object3D.matrix.copy(matrixWorld);
-      fixedEntity.object3D.matrixAutoUpdate = false;
-
-      // Create and attach the video plane inside fixedEntity
-      const plane = createFixedPlane(fixedEntity, 1.2);
-      // make plane visible
-      plane.setAttribute('visible', true);
-
-      // start video playback (unmute a short time after to avoid autoplay mute blocks)
-      try {
-        video.muted = true;
-        await video.play();
-        setTimeout(()=> { try { video.muted = false } catch(e){} }, 400);
-      } catch(e) {
-        console.warn('video play error:', e);
-      }
-
-      // Spawn hearts overlay and interval
-      spawnHeartOnce();
-      if (!heartInterval) heartInterval = setInterval(spawnHeartOnce, 800);
-
-      // Show share panel after 10s
-      if (!showShareTimeout) {
-        showShareTimeout = setTimeout(()=> { share.style.display = 'block'; }, 10000);
-      }
-
-      // Hide the original anchor visual (if mindar had any children); we rely on fixedEntity now
-      anchorEl.setAttribute('visible', 'false');
-    });
-
-    // On targetLost: remove fixedEntity and clean up
-    sceneEl.addEventListener('targetLost', () => {
-      console.log('targetLost — removing locked entity');
-      if (fixedEntity) {
-        fixedEntity.parentNode && fixedEntity.parentNode.removeChild(fixedEntity);
-        fixedEntity = null;
-      }
-      video.pause();
-
-      if (heartInterval) { clearInterval(heartInterval); heartInterval = null; }
-      if (showShareTimeout) { clearTimeout(showShareTimeout); showShareTimeout = null; }
-      share.style.display = 'none';
-
-      // Ensure anchor visible again for next detection
-      anchorEl.setAttribute('visible', 'true');
-    });
-
-    // replace share links — change to your pages
-    document.getElementById('shareFb').href = "https://facebook.com/yourpage";
-    document.getElementById('shareWa').href = "https://wa.me/?text=I%20loved%20this%20product!";
-    document.getElementById('reviewLink').href = "https://yourshop.com/review";
-
-    // Small helpful note for testing: ensure camera permission flow
-    document.addEventListener('DOMContentLoaded', () => {
-      // nothing else required, MindAR will request camera when autoStart runs
-    });
-  </script>
-</body>
+      scene.addEventListener("targetLost", () => {
+        console.log("Target Lost!");
+        video.pause();
+      });
+    </script>
+  </body>
 </html>
-

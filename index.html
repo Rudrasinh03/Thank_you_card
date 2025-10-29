@@ -100,40 +100,42 @@
 
   <!-- MindAR Scene -->
   <a-scene
-    mindar-image="imageTargetSrc: targets (1).mind; autoStart: true; filterMinCF: 0.001; filterBeta: 0.05;"
+    mindar-image="imageTargetSrc: targets.mind; autoStart: true;"
     embedded
     color-space="sRGB"
-    renderer="alpha: true; antialias: true; physicallyCorrectLights: true;"
+    renderer="alpha: true; antialias: true; colorManagement: true; physicallyCorrectLights: true;"
     vr-mode-ui="enabled: false"
   >
     <a-assets>
-      <video id="juiceVideo" src="thank_you.mp4" preload="auto" playsinline webkit-playsinline autoplay muted loop crossorigin="anonymous"></video>
+      <video id="juiceVideo" src="thank_you.mp4" preload="auto" playsinline webkit-playsinline muted loop crossorigin="anonymous"></video>
     </a-assets>
 
     <a-camera position="0 0 0" look-controls="false"></a-camera>
 
-    <!-- ✅ Fixed Video exactly on card -->
+    <!-- ✅ Target entity fixed properly -->
     <a-entity mindar-image-target="targetIndex: 0">
-      <a-plane id="videoPlane"
-        material="shader: flat; src: #juiceVideo;"
-        position="0 0 0.02"  <!-- Slightly above card surface -->
+      <a-video
+        id="videoPlane"
+        src="#juiceVideo"
+        width="1.2"
+        height="0.68"
+        position="0 0 0"
         rotation="0 0 0"
-        width="1"
-        height="0.6"
         visible="false">
-      </a-plane>
+      </a-video>
     </a-entity>
   </a-scene>
 
   <script>
     const scene = document.querySelector('a-scene');
     const video = document.querySelector('#juiceVideo');
-    const plane = document.querySelector('#videoPlane');
+    const plane = document.getElementById('videoPlane');
     const heartsContainer = document.getElementById('hearts');
     const share = document.getElementById('share');
     let heartInterval = null;
     let showShareTimeout = null;
 
+    // Adjust video aspect ratio dynamically
     video.addEventListener('loadedmetadata', () => {
       const aspect = video.videoWidth / video.videoHeight;
       plane.setAttribute('width', 1.2);
@@ -151,6 +153,7 @@
       setTimeout(() => h.remove(), 9000);
     }
 
+    // ✅ Target detection events
     scene.addEventListener('targetFound', async () => {
       console.log("Target found");
       plane.setAttribute('visible', true);
@@ -169,7 +172,9 @@
       }
 
       if(!showShareTimeout){
-        showShareTimeout = setTimeout(()=>{ share.style.display = 'block'; }, 10000);
+        showShareTimeout = setTimeout(()=>{
+          share.style.display = 'block';
+        }, 10000);
       }
     });
 
@@ -177,14 +182,15 @@
       console.log("Target lost");
       plane.setAttribute('visible', false);
       video.pause();
-      if(heartInterval){ clearInterval(heartInterval); heartInterval = null; }
-      if(showShareTimeout){ clearTimeout(showShareTimeout); showShareTimeout = null; }
+      if(heartInterval){
+        clearInterval(heartInterval);
+        heartInterval = null;
+      }
+      if(showShareTimeout){
+        clearTimeout(showShareTimeout);
+        showShareTimeout = null;
+      }
       share.style.display = 'none';
-    });
-
-    video.addEventListener('ended', () => {
-      share.style.display = 'block';
-      if(heartInterval){ clearInterval(heartInterval); heartInterval = null; }
     });
 
     // ✅ Replace with your real links

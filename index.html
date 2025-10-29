@@ -14,7 +14,7 @@
       margin: 0;
       height: 100%;
       overflow: hidden;
-      background: transparent; /* ✅ allows camera feed background */
+      background: transparent;
     }
 
     .hearts-container {
@@ -35,18 +35,9 @@
     }
 
     @keyframes floatUp {
-      0% {
-        transform: translateY(0) scale(1) rotate(0deg);
-        opacity: 0.3;
-      }
-      50% {
-        transform: translateY(-60vh) scale(1.4) rotate(180deg);
-        opacity: 0.7;
-      }
-      100% {
-        transform: translateY(-120vh) scale(1.2) rotate(360deg);
-        opacity: 0;
-      }
+      0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.3; }
+      50% { transform: translateY(-60vh) scale(1.4) rotate(180deg); opacity: 0.7; }
+      100% { transform: translateY(-120vh) scale(1.2) rotate(360deg); opacity: 0; }
     }
 
     #share {
@@ -82,10 +73,7 @@
       transition: transform 0.2s;
     }
 
-    #share a:hover {
-      transform: scale(1.1);
-    }
-
+    #share a:hover { transform: scale(1.1); }
     #shareFb { background: #1877F2; }
     #shareWa { background: #25D366; }
     #reviewLink { background: #FF9500; }
@@ -112,7 +100,7 @@
 
   <!-- MindAR Scene -->
   <a-scene
-    mindar-image="imageTargetSrc: targets (1).mind; autoStart: true;"
+    mindar-image="imageTargetSrc: targets (1).mind; autoStart: true; filterMinCF: 0.001; filterBeta: 0.05;"
     embedded
     color-space="sRGB"
     renderer="alpha: true; antialias: true; colorManagement: true; physicallyCorrectLights: true;"
@@ -125,12 +113,13 @@
     <a-camera position="0 0 0" look-controls="false"></a-camera>
 
     <a-entity mindar-image-target="targetIndex: 0">
+      <!-- Stable, perfectly flat video -->
       <a-plane id="videoPlane"
-               position="0 0 0"
-               rotation="0 0 0"
+               position="0 0 0.01"
+               rotation="-90 0 0"
                visible="false"
-               scale="0 0 0"
-               material="shader: flat; src: #juiceVideo;">
+               scale="1.2 1.2 1.2"
+               material="shader: flat; src: #juiceVideo; transparent: true;">
       </a-plane>
     </a-entity>
   </a-scene>
@@ -144,14 +133,12 @@
     let heartInterval = null;
     let showShareTimeout = null;
 
-    // Resize plane based on video aspect ratio
     video.addEventListener('loadedmetadata', () => {
       const aspect = video.videoWidth / video.videoHeight;
-      plane.setAttribute('width', 1);
-      plane.setAttribute('height', 1 / aspect);
+      plane.setAttribute('width', 1.2);
+      plane.setAttribute('height', 1.2 / aspect);
     });
 
-    // Floating hearts animation
     function spawnHeart(){
       const h = document.createElement('div');
       h.className = 'heart';
@@ -163,17 +150,9 @@
       setTimeout(() => h.remove(), 9000);
     }
 
-    // When target found
     scene.addEventListener('targetFound', async () => {
       console.log("Target found");
       plane.setAttribute('visible', true);
-      plane.setAttribute('animation__scale', {
-        property: 'scale',
-        from: '0 0 0',
-        to: '1 1 1',
-        dur: 900,
-        easing: 'easeOutElastic'
-      });
 
       try {
         video.muted = true;
@@ -188,7 +167,6 @@
         heartInterval = setInterval(spawnHeart, 800);
       }
 
-      // Show share/review after 10 seconds
       if(!showShareTimeout){
         showShareTimeout = setTimeout(()=>{
           share.style.display = 'block';
@@ -196,7 +174,6 @@
       }
     });
 
-    // When target lost
     scene.addEventListener('targetLost', () => {
       console.log("Target lost");
       plane.setAttribute('visible', false);
@@ -212,7 +189,6 @@
       share.style.display = 'none';
     });
 
-    // When video ends
     video.addEventListener('ended', () => {
       share.style.display = 'block';
       if(heartInterval){

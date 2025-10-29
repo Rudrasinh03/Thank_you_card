@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AR Thank You Premium View</title>
+  <title>AR Thank You Premium View (Stable)</title>
 
   <!-- A-Frame + MindAR -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -105,6 +105,7 @@
     color-space="sRGB"
     renderer="alpha: true; antialias: true; colorManagement: true; physicallyCorrectLights: true;"
     vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: true"
   >
     <a-assets>
       <video id="juiceVideo" src="thank_you.mp4" preload="auto" playsinline webkit-playsinline muted loop crossorigin="anonymous"></video>
@@ -112,17 +113,18 @@
 
     <a-camera position="0 0 0" look-controls="false"></a-camera>
 
-    <!-- ✅ Target entity fixed properly -->
+    <!-- ✅ Fixed target entity (no sliding, locked on image) -->
     <a-entity mindar-image-target="targetIndex: 0">
-      <a-video
+      <a-plane
         id="videoPlane"
         src="#juiceVideo"
         width="1.2"
         height="0.68"
-        position="0 0 0"
+        position="0 0 0.01"
         rotation="0 0 0"
-        visible="false">
-      </a-video>
+        visible="false"
+        material="shader: flat; side: double;">
+      </a-plane>
     </a-entity>
   </a-scene>
 
@@ -135,7 +137,17 @@
     let heartInterval = null;
     let showShareTimeout = null;
 
-    // Adjust video aspect ratio dynamically
+    // ✅ Fix jitter by reducing tracking noise
+    AFRAME.registerComponent('fixed-video', {
+      tick: function () {
+        const object3D = this.el.object3D;
+        object3D.matrixAutoUpdate = false;
+      }
+    });
+
+    plane.setAttribute('fixed-video', '');
+
+    // Adjust aspect ratio dynamically
     video.addEventListener('loadedmetadata', () => {
       const aspect = video.videoWidth / video.videoHeight;
       plane.setAttribute('width', 1.2);
@@ -153,9 +165,9 @@
       setTimeout(() => h.remove(), 9000);
     }
 
-    // ✅ Target detection events
+    // ✅ Target detection
     scene.addEventListener('targetFound', async () => {
-      console.log("Target found");
+      console.log("🎯 Target found");
       plane.setAttribute('visible', true);
 
       try {
@@ -179,7 +191,7 @@
     });
 
     scene.addEventListener('targetLost', () => {
-      console.log("Target lost");
+      console.log("🛑 Target lost");
       plane.setAttribute('visible', false);
       video.pause();
       if(heartInterval){
@@ -193,7 +205,7 @@
       share.style.display = 'none';
     });
 
-    // ✅ Replace with your real links
+    // ✅ Your real links
     document.getElementById('shareFb').href = "https://facebook.com/yourpage";
     document.getElementById('shareWa').href = "https://wa.me/?text=Hey!%20I%20just%20loved%20your%20product!";
     document.getElementById('reviewLink').href = "https://yourshop.com/review";

@@ -33,10 +33,11 @@
       animation: floatUp linear forwards;
     }
 
+    /* FIX: Changed 120vh to 1000px and 60vh to 500px for stability */
     @keyframes floatUp {
       0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.3; }
-      50% { transform: translateY(-60vh) scale(1.4) rotate(180deg); opacity: 0.7; }
-      100% { transform: translateY(-120vh) scale(1.2) rotate(360deg); opacity: 0; }
+      50% { transform: translateY(-500px) scale(1.4) rotate(180deg); opacity: 0.7; }
+      100% { transform: translateY(-1000px) scale(1.2) rotate(360deg); opacity: 0; }
     }
 
     #share {
@@ -108,16 +109,15 @@
 
     <a-camera position="0 0 0" look-controls="false"></a-camera>
 
-    <a-entity mindar-image-target="targetIndex: 0"> 
-
-        <a-plane id="videoPlane"
-            rotation="0 0 0"
-            visible="false"
-            material="shader: flat; src: #juiceVideo;">
+    <a-entity mindar-image-target="targetIndex: 0" rotation="-90 0 0">
+                <a-plane id="videoPlane"
+         position="0 0 0" 
+         rotation="0 0 0"
+         visible="false"
+         material="shader: flat; src: #juiceVideo;">
         </a-plane>
-
-    </a-entity> 
-    </a-scene>
+    </a-entity>
+  </a-scene>
 
   <script>
     const scene = document.querySelector('a-scene');
@@ -130,13 +130,13 @@
 
     video.addEventListener('loadedmetadata', () => {
       const aspect = video.videoWidth / video.videoHeight;
-      const videoWidth = 1.2; // Use a constant for width
+      const videoWidth = 1.2;
       const videoHeight = videoWidth / aspect;
       
       plane.setAttribute('width', videoWidth);
       plane.setAttribute('height', videoHeight);
-      
-      // 2. CRITICAL CHANGE: Calculate and set the Y position
+
+      // Position fix to place the video plane on top of the target image
       // Y-Offset = (Target Half-Height: 0.5) + (Video Plane Half-Height)
       const yOffset = 0.5 + (videoHeight / 2);
 
@@ -154,6 +154,7 @@
       setTimeout(() => h.remove(), 9000);
     }
 
+    // Fix 3: The events now trigger on the correct, stable target entity
     scene.addEventListener('targetFound', async () => {
       console.log("Target found");
       plane.setAttribute('visible', true);
@@ -208,4 +209,3 @@
   </script>
 </body>
 </html>
-

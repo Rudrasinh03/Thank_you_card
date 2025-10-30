@@ -33,7 +33,7 @@
       animation: floatUp linear forwards;
     }
 
-    /* FIX: Changed 120vh to 1000px and 60vh to 500px for stability */
+    /* FIX 2: Corrected viewport units to stable pixel units for the heart animation */
     @keyframes floatUp {
       0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.3; }
       50% { transform: translateY(-500px) scale(1.4) rotate(180deg); opacity: 0.7; }
@@ -109,13 +109,15 @@
 
     <a-camera position="0 0 0" look-controls="false"></a-camera>
 
-    <a-entity mindar-image-target="targetIndex: 0" rotation="-90 0 0">
+    <a-entity mindar-image-target="targetIndex: 0" rotation="90 0 0">
+        
                 <a-plane id="videoPlane"
          position="0 0 0" 
          rotation="0 0 0"
          visible="false"
          material="shader: flat; src: #juiceVideo;">
         </a-plane>
+        
     </a-entity>
   </a-scene>
 
@@ -140,7 +142,17 @@
       // Y-Offset = (Target Half-Height: 0.5) + (Video Plane Half-Height)
       const yOffset = 0.5 + (videoHeight / 2);
 
-      plane.setAttribute('position', `0 ${yOffset} 0`);
+      // Since the target is rotated 90 deg on X, the Y-axis (height) in the plane
+      // now corresponds to the Z-axis (depth/forward) in the world.
+      // So, the vertical offset must be applied to the Z coordinate of the plane.
+      // However, we want the video *above* the target, which is the Y-axis *before* rotation.
+      // Let's rely on the coordinate system for the rotated target:
+      // The Y-axis (height) is still what we use to position content *above* the target plane.
+      // Let's correct the Z position to make it stand slightly off the target for better viewing:
+      const zPosition = -0.01; // Tiny offset forward so it doesn't clip the target.
+
+      // FIX 1 CONTINUED: Use Y for vertical offset (above the target plane)
+      plane.setAttribute('position', `0 ${yOffset} ${zPosition}`);
     });
 
     function spawnHeart(){
@@ -154,7 +166,7 @@
       setTimeout(() => h.remove(), 9000);
     }
 
-    // Fix 3: The events now trigger on the correct, stable target entity
+    // FIX 3: The stable target entity fixes the video starting every second
     scene.addEventListener('targetFound', async () => {
       console.log("Target found");
       plane.setAttribute('visible', true);

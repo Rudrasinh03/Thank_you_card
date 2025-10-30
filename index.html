@@ -1,206 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AR Thank You Premium View</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AR Thank You Premium View</title>
 
-  <!-- A-Frame + MindAR -->
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-  <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      overflow: hidden;
-      background: transparent;
-    }
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+    }
 
-    .hearts-container {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 9998;
-      overflow: hidden;
-    }
+    .hearts-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      overflow: hidden;
+    }
 
-    .heart {
-      position: absolute;
-      bottom: -30px;
-      font-size: 20px;
-      opacity: 0.8;
-      filter: drop-shadow(0 0 6px rgba(255,0,100,0.8));
-      animation: floatUp linear forwards;
-    }
+    .heart {
+      position: absolute;
+      bottom: -30px;
+      font-size: 20px;
+      opacity: 0.8;
+      filter: drop-shadow(0 0 6px rgba(255,0,100,0.8));
+      animation: floatUp linear forwards;
+    }
 
-    @keyframes floatUp {
-      0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.3; }
-      50% { transform: translateY(-60vh) scale(1.4) rotate(180deg); opacity: 0.7; }
-      100% { transform: translateY(-120vh) scale(1.2) rotate(360deg); opacity: 0; }
-    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0.3; }
+      50% { transform: translateY(-60vh) scale(1.4) rotate(180deg); opacity: 0.7; }
+      100% { transform: translateY(-120vh) scale(1.2) rotate(360deg); opacity: 0; }
+    }
 
-    #share {
-      display: none;
-      position: fixed;
-      bottom: -100px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      color: #fff;
-      font-family: 'Poppins', sans-serif;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 14px 20px;
-      border-radius: 16px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 0 10px rgba(0,0,0,0.4);
-      text-align: center;
-      animation: slideUp 0.8s ease-out forwards;
-    }
+    #share {
+      display: none;
+      position: fixed;
+      bottom: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 14px 20px;
+      border-radius: 16px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
+      text-align: center;
+      animation: slideUp 0.8s ease-out forwards;
+    }
 
-    #share p {
-      margin: 0 0 6px;
-      font-weight: bold;
-      font-size: 15px;
-    }
+    #share p {
+      margin: 0 0 6px;
+      font-weight: bold;
+      font-size: 15px;
+    }
 
-    #share a {
-      color: white;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 14px;
-      text-decoration: none;
-      transition: transform 0.2s;
-    }
+    #share a {
+      color: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
 
-    #share a:hover { transform: scale(1.1); }
-    #shareFb { background: #1877F2; }
-    #shareWa { background: #25D366; }
-    #reviewLink { background: #FF9500; }
+    #share a:hover { transform: scale(1.1); }
+    #shareFb { background: #1877F2; }
+    #shareWa { background: #25D366; }
+    #reviewLink { background: #FF9500; }
 
-    @keyframes slideUp {
-      from { bottom: -100px; opacity: 0; }
-      to { bottom: 18px; opacity: 1; }
-    }
-  </style>
+    @keyframes slideUp {
+      from { bottom: -100px; opacity: 0; }
+      to { bottom: 18px; opacity: 1; }
+    }
+  </style>
 </head>
 <body>
-  <!-- Floating hearts -->
-  <div class="hearts-container" id="hearts"></div>
+    <div class="hearts-container" id="hearts"></div>
 
-  <!-- Share/Review links -->
-  <div id="share">
-    <p>💬 Share or Review:</p>
-    <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
-      <a id="shareFb" href="#" target="_blank">Facebook</a>
-      <a id="shareWa" href="#" target="_blank">WhatsApp</a>
-      <a id="reviewLink" href="#" target="_blank">Leave a Review</a>
-    </div>
-  </div>
+    <div id="share">
+    <p>💬 Share or Review:</p>
+    <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+      <a id="shareFb" href="#" target="_blank">Facebook</a>
+      <a id="shareWa" href="#" target="_blank">WhatsApp</a>
+      <a id="reviewLink" href="#" target="_blank">Leave a Review</a>
+    </div>
+  </div>
 
-  <!-- MindAR Scene -->
-  <a-scene
-    mindar-image="imageTargetSrc: targets (1).mind; autoStart: true; filterMinCF: 0.001; filterBeta: 0.05;"
-    embedded
-    color-space="sRGB"
-    renderer="alpha: true; antialias: true; colorManagement: true; physicallyCorrectLights: true;"
-    vr-mode-ui="enabled: false"
-  >
-    <a-assets>
-      <video id="juiceVideo" src="thank_you.mp4" preload="auto" playsinline webkit-playsinline autoplay muted loop crossorigin="anonymous"></video>
-    </a-assets>
+    <a-scene
+    mindar-image="imageTargetSrc: targets (1).mind; autoStart: true; filterMinCF: 0.001; filterBeta: 0.05;"
+    embedded
+    color-space="sRGB"
+    renderer="alpha: true; antialias: true; colorManagement: true; physicallyCorrectLights: true;"
+    vr-mode-ui="enabled: false"
+  >
+    <a-assets>
+      <video id="juiceVideo" src="thank_you.mp4" preload="auto" playsinline webkit-playsinline autoplay muted loop crossorigin="anonymous"></video>
+    </a-assets>
 
-    <a-camera position="0 0 0" look-controls="false"></a-camera>
+    <a-camera position="0 0 0" look-controls="false"></a-camera>
 
-    <a-plane id="videoPlane"
-         position="0 0.4 0"
-         rotation="0 0 0"
-         visible="false"
-         scale="1 0.6 1"
-         material="shader: flat; src: #juiceVideo;">
+        <a-plane id="videoPlane"
+         rotation="0 0 0"
+         visible="false"
+         material="shader: flat; src: #juiceVideo;">
 </a-plane>
 
 
-    </a-entity>
-  </a-scene>
+    </a-entity>
+  </a-scene>
 
-  <script>
-    const scene = document.querySelector('a-scene');
-    const video = document.querySelector('#juiceVideo');
-    const plane = document.getElementById('videoPlane');
-    const heartsContainer = document.getElementById('hearts');
-    const share = document.getElementById('share');
-    let heartInterval = null;
-    let showShareTimeout = null;
+  <script>
+    const scene = document.querySelector('a-scene');
+    const video = document.querySelector('#juiceVideo');
+    const plane = document.getElementById('videoPlane');
+    const heartsContainer = document.getElementById('hearts');
+    const share = document.getElementById('share');
+    let heartInterval = null;
+    let showShareTimeout = null;
 
-    video.addEventListener('loadedmetadata', () => {
-      const aspect = video.videoWidth / video.videoHeight;
-      plane.setAttribute('width', 1.2);
-      plane.setAttribute('height', 1.2 / aspect);
-    });
+    video.addEventListener('loadedmetadata', () => {
+      const aspect = video.videoWidth / video.videoHeight;
+      const videoWidth = 1.2; // Use a constant for width
+      const videoHeight = videoWidth / aspect;
+      
+      plane.setAttribute('width', videoWidth);
+      plane.setAttribute('height', videoHeight);
+      
+      // 2. CRITICAL CHANGE: Calculate and set the Y position
+      // Y-Offset = (Target Half-Height: 0.5) + (Video Plane Half-Height)
+      const yOffset = 0.5 + (videoHeight / 2);
 
-    function spawnHeart(){
-      const h = document.createElement('div');
-      h.className = 'heart';
-      h.innerText = '❤️';
-      h.style.left = Math.random()*100 + 'vw';
-      h.style.fontSize = (16 + Math.random()*28) + 'px';
-      h.style.animationDuration = (5 + Math.random()*4) + 's';
-      heartsContainer.appendChild(h);
-      setTimeout(() => h.remove(), 9000);
-    }
+      plane.setAttribute('position', `0 ${yOffset} 0`);
+    });
 
-    scene.addEventListener('targetFound', async () => {
-      console.log("Target found");
-      plane.setAttribute('visible', true);
+    function spawnHeart(){
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.innerText = '❤️';
+      h.style.left = Math.random()*100 + 'vw';
+      h.style.fontSize = (16 + Math.random()*28) + 'px';
+      h.style.animationDuration = (5 + Math.random()*4) + 's';
+      heartsContainer.appendChild(h);
+      setTimeout(() => h.remove(), 9000);
+    }
 
-      try {
-        video.muted = true;
-        await video.play();
-        setTimeout(()=>video.muted=false, 500);
-      } catch(e){
-        console.warn("Autoplay blocked:", e);
-      }
+    scene.addEventListener('targetFound', async () => {
+      console.log("Target found");
+      plane.setAttribute('visible', true);
 
-      if(!heartInterval){
-        spawnHeart();
-        heartInterval = setInterval(spawnHeart, 800);
-      }
+      try {
+        video.muted = true;
+        await video.play();
+        setTimeout(()=>video.muted=false, 500);
+      } catch(e){
+        console.warn("Autoplay blocked:", e);
+      }
 
-      if(!showShareTimeout){
-        showShareTimeout = setTimeout(()=>{
-          share.style.display = 'block';
-        }, 10000);
-      }
-    });
+      if(!heartInterval){
+        spawnHeart();
+        heartInterval = setInterval(spawnHeart, 800);
+      }
 
-    scene.addEventListener('targetLost', () => {
-      console.log("Target lost");
-      plane.setAttribute('visible', false);
-      video.pause();
-      if(heartInterval){
-        clearInterval(heartInterval);
-        heartInterval = null;
-      }
-      if(showShareTimeout){
-        clearTimeout(showShareTimeout);
-        showShareTimeout = null;
-      }
-      share.style.display = 'none';
-    });
+      if(!showShareTimeout){
+        showShareTimeout = setTimeout(()=>{
+          share.style.display = 'block';
+        }, 10000);
+      }
+    });
 
-    video.addEventListener('ended', () => {
-      share.style.display = 'block';
-      if(heartInterval){
-        clearInterval(heartInterval);
-        heartInterval = null;
-      }
-    });
+    scene.addEventListener('targetLost', () => {
+      console.log("Target lost");
+      plane.setAttribute('visible', false);
+      video.pause();
+      if(heartInterval){
+        clearInterval(heartInterval);
+        heartInterval = null;
+      }
+      if(showShareTimeout){
+        clearTimeout(showShareTimeout);
+        showShareTimeout = null;
+      }
+      share.style.display = 'none';
+    });
 
-    // ✅ Replace with your real links
-    document.getElementById('shareFb').href = "https://facebook.com/yourpage";
-    document.getElementById('shareWa').href = "https://wa.me/?text=Hey!%20I%20just%20loved%20your%20product!";
-    document.getElementById('reviewLink').href = "https://yourshop.com/review";
-  </script>
+    video.addEventListener('ended', () => {
+      share.style.display = 'block';
+      if(heartInterval){
+        clearInterval(heartInterval);
+        heartInterval = null;
+      }
+    });
+
+    // ✅ Replace with your real links
+    document.getElementById('shareFb').href = "https://facebook.com/yourpage";
+    document.getElementById('shareWa').href = "https://wa.me/?text=Hey!%20I%20just%20loved%20your%20product!";
+    document.getElementById('reviewLink').href = "https://yourshop.com/review";
+  </script>
 </body>
 </html>
